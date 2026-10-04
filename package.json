@@ -19,10 +19,12 @@
   "files": [
     "extensions",
     "src",
+    "assets",
     "README.md",
     "LICENSE"
   ],
   "pi": {
+    "image": "assets/demo.gif",
     "extensions": [
       "./extensions/index.ts"
     ]

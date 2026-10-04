@@ -154,6 +154,26 @@ function adjustStderr(
     });
 }
 
+let isTypstInstalledCache: boolean | null = null;
+
+async function checkTypstInstalled(): Promise<boolean> {
+  if (isTypstInstalledCache) {
+    return true;
+  }
+
+  return new Promise((resolve) => {
+    const child = spawn("typst", ["--version"], { stdio: "ignore" });
+    child.on("error", () => resolve(false));
+    child.on("close", (code) => {
+      const installed = code === 0;
+      if (installed) {
+        isTypstInstalledCache = true;
+      }
+      resolve(installed);
+    });
+  });
+}
+
 export default function typstExtension(pi: ExtensionAPI): void {
   pi.registerTool<typeof TypstParams, TypstToolDetails>({
     name: "typst",
@@ -202,6 +222,29 @@ export default function typstExtension(pi: ExtensionAPI): void {
       ctx,
     ): Promise<AgentToolResult<TypstToolDetails>> {
       const { path: inputPath, text: inputText } = params;
+
+      if (!(await checkTypstInstalled())) {
+        if (ctx?.hasUI) {
+          ctx.ui.notify(
+            "Typst CLI is not installed. Please install Typst to render formulas.",
+            "error",
+          );
+        }
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Error: typst command not found.",
+            },
+          ],
+          details: {
+            path: inputPath,
+            error:
+              "typst command not found. Ensure Typst CLI is installed and available in PATH.",
+          },
+          isError: true,
+        };
+      }
 
       if ((!inputPath && !inputText) || (inputPath && inputText)) {
         return {
@@ -322,12 +365,7 @@ export default function typstExtension(pi: ExtensionAPI): void {
           throw new Error("Typst compilation aborted");
         }
 
-        const message =
-          error instanceof Error && "code" in error && error.code === "ENOENT"
-            ? "typst command not found. Ensure Typst CLI is installed and available in PATH."
-            : error instanceof Error
-              ? error.message
-              : String(error);
+        const message = error instanceof Error ? error.message : String(error);
 
         return {
           content: [{ type: "text", text: `Error: ${message}` }],
