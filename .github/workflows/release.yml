@@ -51,5 +51,5 @@ jobs:
 
       - name: Stage package (OIDC)
         run: |
-          npm stage publish --access public --provenance
+          pnpm stage publish --access public --provenance
           echo "### ⏳ Package staged to npm. Please approve on [npmjs.com](https://www.npmjs.com/package/pi-typst/access) with 2FA." >> "$GITHUB_STEP_SUMMARY"
