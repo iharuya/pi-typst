@@ -23,5 +23,7 @@ flowchart TD
 ## Development
 
 - **Prerequisites**: Ensure the `typst` CLI is installed and available in `$PATH`.
-- **Manual Testing**: Run `pi -e .` to load and test the extension interactively in Pi.
+- **Manual Testing**
+    - `cd /tmp`
+    -　`pi -e [directory of this AGENTS.md]`
 
