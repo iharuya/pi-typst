@@ -8,6 +8,12 @@
 
 A Pi extension that renders Typst markup into terminal images.
 
+## Install
+
+```sh
+pi install npm:pi-typst
+```
+
 ## Prerequisites
 
 Requires the [Typst CLI](https://typst.app/open-source/) to be installed and available on your system.

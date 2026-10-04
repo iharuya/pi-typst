@@ -7,6 +7,7 @@ import type { ExtensionAPI, Theme } from "@earendil-works/pi-coding-agent";
 import {
   allocateImageId,
   type Component,
+  getCapabilities,
   getCellDimensions,
   Image,
   Text,
@@ -223,6 +224,29 @@ export default function typstExtension(pi: ExtensionAPI): void {
     ): Promise<AgentToolResult<TypstToolDetails>> {
       const { path: inputPath, text: inputText } = params;
 
+      if (!getCapabilities().images) {
+        if (ctx?.hasUI) {
+          ctx.ui.notify(
+            "Failed to display formula: Terminal does not support image display.",
+            "error",
+          );
+        }
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Terminal does not support image display.",
+            },
+          ],
+          details: {
+            path: inputPath,
+            error:
+              "Terminal does not support image display.",
+          },
+          isError: true,
+        };
+      }
+
       if (!(await checkTypstInstalled())) {
         if (ctx?.hasUI) {
           ctx.ui.notify(
@@ -234,7 +258,7 @@ export default function typstExtension(pi: ExtensionAPI): void {
           content: [
             {
               type: "text",
-              text: "Error: typst command not found.",
+              text: "typst command not found.",
             },
           ],
           details: {
@@ -251,7 +275,7 @@ export default function typstExtension(pi: ExtensionAPI): void {
           content: [
             {
               type: "text",
-              text: "Error: exactly one of 'path' or 'text' must be provided.",
+              text: "Exactly one of 'path' or 'text' must be provided.",
             },
           ],
           details: {
@@ -352,7 +376,7 @@ export default function typstExtension(pi: ExtensionAPI): void {
           content: [
             {
               type: "text",
-              text: `✓ Rendered (${image.widthPx}x${image.heightPx} px, ~${approxRows} rows). Displayed to user; do not repeat rendered content in text.`,
+              text: `Rendered (${image.widthPx}x${image.heightPx} px, ~${approxRows} rows) Displayed to user; do not repeat rendered content in text.`,
             },
           ],
           details: {
@@ -368,7 +392,7 @@ export default function typstExtension(pi: ExtensionAPI): void {
         const message = error instanceof Error ? error.message : String(error);
 
         return {
-          content: [{ type: "text", text: `Error: ${message}` }],
+          content: [{ type: "text", text: message }],
           details: {
             path: inputPath,
             error: message,
