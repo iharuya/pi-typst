@@ -1,6 +1,6 @@
 {
   "name": "pi-typst",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Pi extension that renders Typst into terminal images",
   "keywords": [
     "pi-package",
