@@ -31,6 +31,7 @@
     "access": "public"
   },
   "scripts": {
+    "check": "pnpm typecheck && pnpm deordinal check && pnpm biome ci --diagnostic-level=warn --error-on-warnings && pnpm test",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --dir tests",
     "fix": "biome check --write --diagnostic-level=info --error-on-warnings",

@@ -41,14 +41,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Run deordinal check
-        run: pnpm deordinal check
-        
-      - name: Check formatting and lint rules
-        run: pnpm biome ci --diagnostic-level=warn --error-on-warnings
-
-      - name: Test
-        run: pnpm test
+      - name: Run checks
+        run: pnpm check
