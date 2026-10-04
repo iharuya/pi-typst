@@ -240,8 +240,7 @@ export default function typstExtension(pi: ExtensionAPI): void {
           ],
           details: {
             path: inputPath,
-            error:
-              "Terminal does not support image display.",
+            error: "Terminal does not support image display.",
           },
           isError: true,
         };
