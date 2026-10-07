@@ -9,6 +9,9 @@ export type CompileResult =
   | { ok: true; png: Buffer }
   | { ok: false; error: string };
 
+// Tuned for dark terminals; light backgrounds are out of scope.
+const TEXT_COLOR = "#d4d4d4";
+
 const FONT_CANDIDATES = [
   "Libertinus Serif",
   // Without an explicit CJK font, typst may fall back to one whose line
@@ -21,7 +24,7 @@ const FONT_CANDIDATES = [
 ];
 
 function preambleLines(layout: TypstLayout, fonts: string[]): string[] {
-  const color = `rgb("${layout.textColor}")`;
+  const color = `rgb("${TEXT_COLOR}")`;
   const font =
     fonts.length > 0 ? `font: (${fonts.map(typstString).join(", ")},), ` : "";
   return [

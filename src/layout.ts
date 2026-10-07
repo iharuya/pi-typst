@@ -4,7 +4,6 @@ export type TypstLayout = {
   pageWidthPt: number;
   ppi: number;
   textSizePt: number;
-  textColor: string;
 };
 
 const TEXT_SIZE_PT = 12;
@@ -16,7 +15,6 @@ const MAX_COLUMNS = 100;
 // Pi's tool row pads 1 column per side and pi-tui's Image reserves 2 more.
 const RESERVED_COLUMNS = 4;
 const FALLBACK_TERMINAL_COLUMNS = 80;
-const FALLBACK_TEXT_COLOR = "#d4d4d4";
 
 export function cellDimensions(): CellDimensions {
   const { widthPx, heightPx } = getCellDimensions();
@@ -32,13 +30,12 @@ export function cellDimensions(): CellDimensions {
  * readable maximum. Narrower panes get the minimum width scaled down instead
  * of reflowing wide formulas off the page.
  */
-export function terminalLayout(options: {
-  terminalColumns?: number | undefined;
-  textColor?: string | undefined;
-}): TypstLayout {
+export function terminalLayout(
+  terminalColumns: number | undefined,
+): TypstLayout {
   const cell = cellDimensions();
   const available =
-    (options.terminalColumns || FALLBACK_TERMINAL_COLUMNS) - RESERVED_COLUMNS;
+    (terminalColumns || FALLBACK_TERMINAL_COLUMNS) - RESERVED_COLUMNS;
   const columns = Math.min(MAX_COLUMNS, Math.max(MIN_COLUMNS, available));
   const pxPerPt = cell.heightPx / (CELL_HEIGHT_PER_EM * TEXT_SIZE_PT);
 
@@ -46,6 +43,5 @@ export function terminalLayout(options: {
     pageWidthPt: (columns * cell.widthPx) / pxPerPt,
     ppi: pxPerPt * 72,
     textSizePt: TEXT_SIZE_PT,
-    textColor: options.textColor ?? FALLBACK_TEXT_COLOR,
   };
 }

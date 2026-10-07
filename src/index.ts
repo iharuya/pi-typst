@@ -1,10 +1,6 @@
 import type { AgentToolResult } from "@earendil-works/pi-agent-core";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import {
-  colorToHex,
-  getCapabilities,
-  getPngDimensions,
-} from "@earendil-works/pi-tui";
+import { getCapabilities, getPngDimensions } from "@earendil-works/pi-tui";
 import { type Static, Type } from "typebox";
 import { compileTypst, isTypstInstalled, type TypstSource } from "./compile.js";
 import { terminalLayout } from "./layout.js";
@@ -72,12 +68,7 @@ export default function typstExtension(pi: ExtensionAPI): void {
       }
 
       try {
-        const layout = terminalLayout({
-          terminalColumns: process.stdout.columns,
-          textColor: ctx.hasUI
-            ? colorToHex(ctx.ui.theme.colors.toolOutput)
-            : undefined,
-        });
+        const layout = terminalLayout(process.stdout.columns);
         const compiled = await compileTypst(source, {
           cwd: ctx.cwd,
           layout,
