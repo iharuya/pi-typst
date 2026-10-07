@@ -4,13 +4,12 @@ import { getCapabilities, getCellDimensions } from "@earendil-works/pi-tui";
 import { formatCompileError } from "./diagnostics.js";
 import {
   INVALID_INPUT_MESSAGE,
-  loadSource,
   parseInput,
+  prepareDocument,
   TypstParams,
 } from "./input.js";
 import { estimateRows } from "./layout.js";
 import { parsePngDimensions } from "./png.js";
-import { withPreamble } from "./preamble.js";
 import { renderCall, renderResult } from "./render.js";
 import type { RenderedImage, TypstToolDetails } from "./types.js";
 import { compileToPng, isTypstInstalled } from "./typst-cli.js";
@@ -83,19 +82,14 @@ export const typstTool: ToolDefinition<typeof TypstParams, TypstToolDetails> = {
 
     try {
       const cwd = ctx?.cwd ?? process.cwd();
-      const source = await loadSource(input, cwd);
-      const result = await compileToPng({
-        source: withPreamble(source.content),
-        cwd: source.workingDir,
-        root: cwd,
-        signal,
-      });
+      const document = await prepareDocument(input, cwd);
+      const result = await compileToPng({ ...document, cwd, signal });
 
       if (!result.ok) {
         const message = formatCompileError(
           result.stderr,
           result.exitCode,
-          path,
+          input.kind,
         );
         return errorResult(message, { path, error: message });
       }

@@ -29,7 +29,7 @@ flowchart TD
 - **Code Layout** (`src/`)
     - `index.ts`: Extension entry; registers the tool.
     - `tool.ts`: Tool definition and `execute` flow.
-    - `input.ts`: Parameter schema, validation, and source loading.
+    - `input.ts`: Parameter schema, validation, and the document piped to typst (files are `#include`d so relative paths resolve from their directory).
     - `preamble.ts`: Default styling prepended to user content.
     - `typst-cli.ts`: `typst` process invocation.
     - `diagnostics.ts`: Maps compiler errors back to user lines.

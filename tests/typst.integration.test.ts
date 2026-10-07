@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ExtensionToolContext } from "@earendil-works/pi-coding-agent";
@@ -80,6 +80,48 @@ describe.skipIf(!hasTypst)("with the typst CLI", () => {
     await writeFile(join(dir, "bad.typ"), "#foo");
     const result = await run({ path: "bad.typ" });
     expect(textOf(result)).toContain("bad.typ:1:1");
+  });
+
+  it("resolves a file's relative imports and images from its directory", async () => {
+    const sub = join(dir, "nested");
+    await mkdir(sub, { recursive: true });
+    const pic = await compileToPng({ source: "x", cwd: dir, root: dir });
+    if (!pic.ok) throw new Error(pic.stderr);
+    await writeFile(join(sub, "pic.png"), pic.png);
+    await writeFile(join(sub, "part.typ"), "Included part");
+    await writeFile(
+      join(sub, "main.typ"),
+      '#include "part.typ"\n#image("pic.png", width: 1cm)',
+    );
+    const result = await run({ path: "nested/main.typ" });
+    expect(textOf(result)).toMatch(/^Rendered/);
+  });
+
+  it("reports nested file errors at their real path and line", async () => {
+    await mkdir(join(dir, "nested"), { recursive: true });
+    await writeFile(join(dir, "nested", "broken.typ"), "ok\n\n#foo");
+    const text = textOf(await run({ path: "nested/broken.typ" }));
+    expect(text).toContain("┌─ nested/broken.typ:3:1");
+    expect(text).toMatch(/^3 │ #foo$/m);
+    expect(text).not.toContain("<stdin>");
+  });
+
+  it("renders files outside the cwd", async () => {
+    const outside = await mkdtemp(join(tmpdir(), "pi-typst-outside-"));
+    try {
+      await writeFile(join(outside, "part.typ"), "Part");
+      await writeFile(join(outside, "main.typ"), '#include "part.typ"');
+      const result = await run({ path: join(outside, "main.typ") });
+      expect(textOf(result)).toMatch(/^Rendered/);
+    } finally {
+      await rm(outside, { recursive: true, force: true });
+    }
+  });
+
+  it("lets a file override the preamble's page setup", async () => {
+    await writeFile(join(dir, "narrow.typ"), "#set page(width: 50mm)\nHi");
+    const result = await run({ path: "narrow.typ" });
+    expect(result.details?.image?.widthPx).toBeLessThan(964);
   });
 
   it("rejects multi-page documents with guidance", async () => {

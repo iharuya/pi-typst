@@ -1,3 +1,4 @@
+import type { TypstInput } from "./input.js";
 import { PREAMBLE_LINE_COUNT } from "./preamble.js";
 
 const MULTI_PAGE_ERROR =
@@ -14,16 +15,12 @@ function shiftLine(line: string, offset: number): number {
  * Rewrites `<stdin>:L:C` locations and source gutter line numbers so they
  * point at the user's content instead of the preamble-prefixed input.
  */
-export function remapDiagnostics(
-  stderr: string,
-  lineOffset: number,
-  filename = "<stdin>",
-): string {
+export function remapDiagnostics(stderr: string, lineOffset: number): string {
   return stderr
     .replace(
       /<stdin>:(\d+):(\d+)/g,
       (_, line: string, col: string) =>
-        `${filename}:${shiftLine(line, lineOffset)}:${col}`,
+        `<stdin>:${shiftLine(line, lineOffset)}:${col}`,
     )
     .replace(
       /^([ \t]*)(\d+)([ \t]*│)/gm,
@@ -32,15 +29,27 @@ export function remapDiagnostics(
     );
 }
 
+/** Drops the "while including ... at <stdin>" trace left by the wrapper document. */
+export function stripWrapperTrace(stderr: string): string {
+  return stderr.replace(
+    /\n[ \t]*while including `[^`]*` at <stdin>:\d+:\d+\n[^\n]*/g,
+    "",
+  );
+}
+
 export function formatCompileError(
   stderr: string,
   exitCode: number | null,
-  filename?: string,
+  kind: TypstInput["kind"],
 ): string {
   const trimmed = stderr.trim();
   if (trimmed.includes(MULTI_PAGE_ERROR)) {
     return MULTI_PAGE_MESSAGE;
   }
-  const remapped = remapDiagnostics(trimmed, PREAMBLE_LINE_COUNT, filename);
-  return remapped || `typst exited with code ${exitCode}`;
+  // File diagnostics already carry the real path and lines.
+  const message =
+    kind === "text"
+      ? remapDiagnostics(trimmed, PREAMBLE_LINE_COUNT)
+      : stripWrapperTrace(trimmed).trim();
+  return message || `typst exited with code ${exitCode}`;
 }
