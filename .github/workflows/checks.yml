@@ -38,6 +38,9 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
 
+      - name: Setup Typst
+        uses: typst-community/setup-typst@fee4b65b091cc546f02ce3be15fad8760f38a108 # v5.3.0
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       
