@@ -8,11 +8,11 @@ import type {
   ExtensionToolContext,
   ToolDefinition,
 } from "@earendil-works/pi-coding-agent";
-import { setCapabilities } from "@earendil-works/pi-tui";
+import { setCapabilities, setCellDimensions } from "@earendil-works/pi-tui";
 import type { TSchema } from "typebox";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import typstExtension from "../src/index.js";
-import type { TypstToolDetails } from "../src/render.js";
+import { naturalCellSize, type TypstToolDetails } from "../src/render.js";
 
 type Params = { path?: string; text?: string };
 
@@ -177,5 +177,64 @@ describe.skipIf(!typstAvailable)("typst tool with the typst CLI", () => {
     await expect(
       run({ text: "$x$" }, { signal: controller.signal }),
     ).rejects.toThrow();
+  });
+});
+
+describe.skipIf(!typstAvailable)("page layout", () => {
+  const originalColumns = Object.getOwnPropertyDescriptor(
+    process.stdout,
+    "columns",
+  );
+
+  afterEach(() => {
+    if (originalColumns) {
+      Object.defineProperty(process.stdout, "columns", originalColumns);
+    } else {
+      Reflect.deleteProperty(process.stdout, "columns");
+    }
+  });
+
+  async function renderedCells(
+    terminalColumns: number,
+    cell = { widthPx: 10, heightPx: 20 },
+  ) {
+    Object.defineProperty(process.stdout, "columns", {
+      value: terminalColumns,
+      configurable: true,
+    });
+    setCellDimensions(cell);
+    const result = await run({ text: "Pythagoras: $a^2 + b^2 = c^2$" });
+    const image = result.details.image;
+    if (!image) {
+      throw new Error(textOf(result));
+    }
+    return naturalCellSize(image);
+  }
+
+  it("spans the pane without scaling", async () => {
+    const { columns } = await renderedCells(90);
+
+    expect(columns).toBeLessThanOrEqual(90 - 4);
+    expect(columns).toBeGreaterThan(80);
+  });
+
+  it("caps the width in very wide panes", async () => {
+    const { columns } = await renderedCells(400);
+
+    expect(columns).toBeLessThan(200);
+  });
+
+  it("keeps a minimum width in narrow panes", async () => {
+    const { columns } = await renderedCells(30);
+
+    expect(columns).toBeGreaterThan(30);
+  });
+
+  it("occupies the same cells regardless of pixel density", async () => {
+    const standard = await renderedCells(90, { widthPx: 10, heightPx: 20 });
+    const retina = await renderedCells(90, { widthPx: 20, heightPx: 40 });
+
+    expect(retina.columns).toBe(standard.columns);
+    expect(Math.abs(retina.rows - standard.rows)).toBeLessThanOrEqual(1);
   });
 });

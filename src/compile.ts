@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { access } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import type { TypstLayout } from "./layout.js";
 
 export type TypstSource = { text: string } | { path: string };
 
@@ -8,29 +9,48 @@ export type CompileResult =
   | { ok: true; png: Buffer }
   | { ok: false; error: string };
 
-const PREAMBLE_LINES = [
-  "#set page(width: 170mm, height: auto, margin: (x: 0pt, y: 0.5em), fill: none)",
-  '#set text(fill: rgb("#d4d4d4"), size: 12pt)',
-  "#set par(leading: 0.85em)",
-];
-
-const PREAMBLE = `${PREAMBLE_LINES.join("\n")}\n`;
+function preambleLines(layout: TypstLayout): string[] {
+  return [
+    `#set page(width: ${layout.pageWidthPt}pt, height: auto, margin: (x: 0pt, y: 0.5em), fill: none)`,
+    `#set text(fill: rgb("${layout.textColor}"), size: ${layout.textSizePt}pt)`,
+    "#set par(leading: 0.85em)",
+  ];
+}
 
 const MULTI_PAGE_ERROR =
   "Output must fit on a single page. Remove '#pagebreak()' and any page size settings; the page is pre-configured to grow with the content.";
 
 export async function compileTypst(
   source: TypstSource,
-  options: { cwd: string; signal?: AbortSignal | undefined },
+  options: {
+    cwd: string;
+    layout: TypstLayout;
+    signal?: AbortSignal | undefined;
+  },
 ): Promise<CompileResult> {
   const { root, body } =
     "text" in source
       ? { root: options.cwd, body: source.text }
       : await includeFile(resolve(options.cwd, source.path), options.cwd);
 
+  const preamble = preambleLines(options.layout);
   const { exitCode, stdout, stderr } = await runTypst(
-    ["compile", "-", "-", "--format", "png", "--root", root],
-    { stdin: `${PREAMBLE}${body}`, cwd: root, signal: options.signal },
+    [
+      "compile",
+      "-",
+      "-",
+      "--format",
+      "png",
+      "--ppi",
+      String(options.layout.ppi),
+      "--root",
+      root,
+    ],
+    {
+      stdin: `${preamble.join("\n")}\n${body}`,
+      cwd: root,
+      signal: options.signal,
+    },
   );
 
   if (exitCode === 0) {
@@ -39,7 +59,7 @@ export async function compileTypst(
   if (stderr.includes("cannot export multiple images")) {
     return { ok: false, error: MULTI_PAGE_ERROR };
   }
-  const error = shiftStdinLocations(stderr.trim(), PREAMBLE_LINES.length);
+  const error = shiftStdinLocations(stderr.trim(), preamble.length);
   return { ok: false, error: error || `typst exited with code ${exitCode}` };
 }
 

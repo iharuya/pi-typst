@@ -2,12 +2,11 @@ import type { AgentToolResult } from "@earendil-works/pi-agent-core";
 import type { Theme } from "@earendil-works/pi-coding-agent";
 import {
   allocateImageId,
-  type CellDimensions,
   type Component,
-  getCellDimensions,
   Image,
   Text,
 } from "@earendil-works/pi-tui";
+import { cellDimensions } from "./layout.js";
 
 export type RenderedImage = {
   data: string;
@@ -62,14 +61,6 @@ export function naturalCellSize(image: RenderedImage): {
   return {
     columns: Math.max(1, Math.ceil(image.widthPx / cell.widthPx)),
     rows: Math.max(1, Math.ceil(image.heightPx / cell.heightPx)),
-  };
-}
-
-function cellDimensions(): CellDimensions {
-  const { widthPx, heightPx } = getCellDimensions();
-  return {
-    widthPx: widthPx > 0 ? widthPx : 9,
-    heightPx: heightPx > 0 ? heightPx : 18,
   };
 }
 
