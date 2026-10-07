@@ -26,4 +26,13 @@ flowchart TD
 - **Manual Testing**
     - `cd /tmp`
     -　`pi -e [directory of this AGENTS.md]`
-
+- **Code Layout** (`src/`)
+    - `index.ts`: Extension entry; registers the tool.
+    - `tool.ts`: Tool definition and `execute` flow.
+    - `input.ts`: Parameter schema, validation, and source loading.
+    - `preamble.ts`: Default styling prepended to user content.
+    - `typst-cli.ts`: `typst` process invocation.
+    - `diagnostics.ts`: Maps compiler errors back to user lines.
+    - `png.ts`, `layout.ts`: Image dimensions and terminal cell sizing.
+    - `render.ts`: TUI components for tool call/result.
+- **Tests**: `pnpm test`. `tests/typst.integration.test.ts` runs only when `typst` is in `$PATH`.
