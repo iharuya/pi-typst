@@ -9,11 +9,24 @@ export type CompileResult =
   | { ok: true; png: Buffer }
   | { ok: false; error: string };
 
-function preambleLines(layout: TypstLayout): string[] {
+const FONT_CANDIDATES = [
+  "Libertinus Serif",
+  // Without an explicit CJK font, typst may fall back to one whose line
+  // metrics let glyphs overflow the line box and overlap the previous line.
+  "Hiragino Sans",
+  "Hiragino Kaku Gothic ProN",
+  "Noto Sans CJK JP",
+  "Noto Sans JP",
+  "Yu Gothic",
+];
+
+function preambleLines(layout: TypstLayout, fonts: string[]): string[] {
   const color = `rgb("${layout.textColor}")`;
+  const font =
+    fonts.length > 0 ? `font: (${fonts.map(typstString).join(", ")},), ` : "";
   return [
     `#set page(width: ${layout.pageWidthPt}pt, height: auto, margin: (x: 0pt, y: 0.5em), fill: none)`,
-    `#set text(fill: ${color}, size: ${layout.textSizePt}pt)`,
+    `#set text(${font}fill: ${color}, size: ${layout.textSizePt}pt)`,
     "#set par(leading: 0.85em)",
     `#set line(stroke: ${color})`,
     `#set table(stroke: ${color})`,
@@ -36,7 +49,7 @@ export async function compileTypst(
       ? { root: options.cwd, body: source.text }
       : await includeFile(resolve(options.cwd, source.path), options.cwd);
 
-  const preamble = preambleLines(options.layout);
+  const preamble = preambleLines(options.layout, await installedFonts());
   const { exitCode, stdout, stderr } = await runTypst(
     [
       "compile",
@@ -76,6 +89,21 @@ export async function isTypstInstalled(): Promise<boolean> {
     );
   }
   return typstFound;
+}
+
+let fontsQuery: Promise<string[]> | undefined;
+
+// Listing only installed fonts avoids "unknown font family" warnings, which
+// would otherwise show up in compile errors reported to the agent.
+function installedFonts(): Promise<string[]> {
+  fontsQuery ??= runTypst(["fonts"]).then(
+    ({ stdout }) => {
+      const installed = new Set(stdout.toString().split(/\r?\n/));
+      return FONT_CANDIDATES.filter((font) => installed.has(font));
+    },
+    () => [],
+  );
+  return fontsQuery;
 }
 
 // Typst resolves relative paths in stdin sources against --root, not the
