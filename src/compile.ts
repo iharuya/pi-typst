@@ -10,10 +10,13 @@ export type CompileResult =
   | { ok: false; error: string };
 
 function preambleLines(layout: TypstLayout): string[] {
+  const color = `rgb("${layout.textColor}")`;
   return [
     `#set page(width: ${layout.pageWidthPt}pt, height: auto, margin: (x: 0pt, y: 0.5em), fill: none)`,
-    `#set text(fill: rgb("${layout.textColor}"), size: ${layout.textSizePt}pt)`,
+    `#set text(fill: ${color}, size: ${layout.textSizePt}pt)`,
     "#set par(leading: 0.85em)",
+    `#set line(stroke: ${color})`,
+    `#set table(stroke: ${color})`,
   ];
 }
 
