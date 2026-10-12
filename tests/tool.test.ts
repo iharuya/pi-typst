@@ -28,6 +28,7 @@ const typstAvailable = (() => {
 function loadTool(): ToolDefinition<TSchema, TypstToolDetails> {
   let tool: ToolDefinition<TSchema, TypstToolDetails> | undefined;
   const pi = {
+    on: () => {},
     registerTool: (definition: ToolDefinition<TSchema, TypstToolDetails>) => {
       tool = definition;
     },

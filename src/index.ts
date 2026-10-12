@@ -3,6 +3,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { getCapabilities, getPngDimensions } from "@earendil-works/pi-tui";
 import { type Static, Type } from "typebox";
 import { compileTypst, isTypstInstalled, type TypstSource } from "./compile.js";
+import { herdrImageWarning } from "./herdr.js";
 import { terminalLayout } from "./layout.js";
 import {
   naturalCellSize,
@@ -27,6 +28,16 @@ const TypstParams = Type.Object({
 type TypstParamsType = Static<typeof TypstParams>;
 
 export default function typstExtension(pi: ExtensionAPI): void {
+  pi.on("session_start", (event, ctx) => {
+    if (event.reason !== "startup" || ctx.mode !== "tui") {
+      return;
+    }
+    const warning = herdrImageWarning(process.env, getCapabilities().images);
+    if (warning) {
+      ctx.ui.notify(warning, "warning");
+    }
+  });
+
   pi.registerTool<typeof TypstParams, TypstToolDetails>({
     name: "typst",
     label: "Typst",
