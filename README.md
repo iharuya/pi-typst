@@ -25,3 +25,17 @@ Rendered output is displayed as an inline image, so you need a terminal that sup
 - [Kitty graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/): [Kitty](https://sw.kovidgoyal.net/kitty/), [Ghostty](https://ghostty.org/), [WezTerm](https://wezterm.org/), [Warp](https://www.warp.dev/)
 - [iTerm2 inline images](https://iterm2.com/documentation-images.html): [iTerm2](https://iterm2.com/)
 
+### Terminal multiplexers
+
+Pi turns off inline images inside terminal multiplexers such as tmux and [Herdr](https://herdr.dev/), so the `typst` tool fails there by default.
+
+Herdr 0.9 and later render Kitty graphics when the outer terminal supports them. To enable images in Herdr, set [`PI_IMAGE_PROTOCOL`](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/terminal-setup.md#override-detected-capabilities) before starting Pi:
+
+```sh
+export PI_IMAGE_PROTOCOL=kitty
+```
+
+Alternatively, set `terminal.images` to `"kitty"` in Pi's settings.
+
+pi-typst shows a warning at startup inside Herdr 0.9 and later while images are off.
+
