@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "pi": {
-    "image": "assets/demo.gif",
+    "image": "https://raw.githubusercontent.com/iharuya/pi-typst/main/assets/demo.png",
     "extensions": [
       "./extensions/index.ts"
     ]
