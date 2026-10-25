@@ -24,6 +24,5 @@ flowchart TD
 
 - **Prerequisites**: Ensure the `typst` CLI is installed and available in `$PATH`.
 - **Manual Testing**
-    - `cd /tmp`
-    -　`pi -e [directory of this AGENTS.md]`
-
+  - `cd /tmp`
+  - `pi -e [directory of this AGENTS.md]`

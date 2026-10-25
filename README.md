@@ -38,4 +38,3 @@ export PI_IMAGE_PROTOCOL=kitty
 Alternatively, set `terminal.images` to `"kitty"` in Pi's settings.
 
 pi-typst shows a warning at startup inside Herdr 0.9 and later while images are off.
-
