@@ -22,6 +22,7 @@ Requires the [Typst CLI](https://typst.app/open-source/) to be installed and ava
 > The default terminals on macOS (Terminal.app) and Ubuntu (GNOME Terminal / Ptyxis) are not supported.
 
 Rendered output is displayed as an inline image, so you need a terminal that supports one of the following:
+
 - [Kitty graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/): [Kitty](https://sw.kovidgoyal.net/kitty/), [Ghostty](https://ghostty.org/), [WezTerm](https://wezterm.org/), [Warp](https://www.warp.dev/)
 - [iTerm2 inline images](https://iterm2.com/documentation-images.html): [iTerm2](https://iterm2.com/)
 
